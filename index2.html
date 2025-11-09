@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录系统测试</title>
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: rgba(30, 30, 30, 0.1);
+            --text-primary: #f5f5f5;
+            --text-secondary: #aaaaaa;
+            --accent-color: #7c93e0;
+            --accent-hover: #8fa5f0;
+            --border-color: rgba(51, 51, 51, 0.8);
+            --error-color: #ff6b6b;
+            --success-color: #51cf66;
+            --warning-color: #ffd93d;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .light-mode {
+            --bg-primary: #f5f7fa;
+            --bg-secondary: rgba(255, 255, 255, 0.1);
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --accent-color: #667eea;
+            --accent-hover: #5a6fd8;
+            --border-color: rgba(225, 229, 235, 0.8);
+            --error-color: #e74c3c;
+            --success-color: #28a745;
+            --warning-color: #f39c12;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        body {
+            background-image:url("bg12.png");
+            background-position:center center;
+            background-repeat: no-repeat;
+            background-attachment:fixed;
+            background-size:cover;
+            display : flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-color: var(--bg-primary);
+        }
+          
+        .login-container {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            color: var(--text-primary);
+            backdrop-filter: blur(0px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .security-shield {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: var(--success-color);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 10px;
+        }
+        
+        .login-header h1 {
+            color: var(--text-primary);
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .login-header p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+        
+        .security-level {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--success-color);
+        }
+        
+        .security-level i {
+            margin-right: 5px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            backdrop-filter: blur(5px);
+        }
+        
+        .input-group input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(124, 147, 224, 0.2);
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .password-strength {
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .strength-bar {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s;
+        }
+        
+        .strength-weak {
+            background: var(--error-color);
+        }
+        
+        .strength-medium {
+            background: var(--warning-color);
+        }
+        
+        .strength-strong {
+            background: var(--success-color);
+        }
+        
+        .captcha-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .captcha-question {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(5px);
+            text-align: center;
+        }
+        
+        .captcha-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .captcha-input input {
+            flex: 1;
+        }
+        
+        .hint-btn {
+            background: rgba(124, 147, 224, 0.2);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 0 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .hint-btn:hover {
+            background: rgba(124, 147, 224, 0.3);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent-color) 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124, 147, 224, 0.4);
+        }
+        
+        .login-btn:disabled {
+            background: rgba(85, 85, 85, 0.8);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .login-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .login-btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        .error-message {
+            color: var(--error-color);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .attempts-warning {
+            color: var(--error-color);
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .security-info {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .security-info i {
+            color: var(--success-color);
+            margin-right: 5px;
+        }
+        
+        .forgot-password {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .forgot-password a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .security-features {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature i {
+            margin-right: 5px;
+            color: var(--success-color);
+        }
+        
+        .timeout-warning {
+            color: var(--warning-color);
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: right;
+            display: none;
+        }
+        
+        .hint-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .hint-content {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        
+        .hint-content h3 {
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+        
+        .hint-content p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .close-hint {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+            }
+            
+            .security-features {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .captcha-input {
+                flex-direction: column;
+            }
+            
+            .hint-btn {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="login-container">
+        <button class="theme-toggle" id="themeToggle">☀️</button>
+        <div class="security-shield">🛡️</div>
+        
+        <div class="login-header">
+            <h1>登录系统</h1>
+            <p>请输入群主给的号登录</p>
+            <div class="security-level">
+                <i>✓</i> 手机摄像头已启用
+            </div>
+        </div>
+        
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" placeholder="请输入用户名" required autocomplete="username">
+                <div class="error-message" id="username-error">用户名不能为空</div>
+            </div>
+            
+            <div class="input-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" placeholder="请输入密码" required autocomplete="current-password">
+                <div class="error-message" id="password-error">密码不能为空</div>
+                <div class="password-strength">
+                    <div class="strength-bar" id="passwordStrength"></div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="captcha">安全验证</label>
+                <div class="captcha-container">
+                    <div class="captcha-question" id="captchaQuestion">
+                        问：群主QQ号是多少？
+                    </div>
+                    <div class="captcha-input">
+                        <input type="text" id="captcha" name="captcha" placeholder="请输入答案" required>
+                        <button type="button" class="hint-btn" id="hintBtn">提示</button>
+                    </div>
+                </div>
+                <div class="error-message" id="captcha-error">答案错误，请重新输入</div>
+            </div>
+            
+            <button type="submit" class="login-btn" id="loginBtn">安全登录</button>
+            
+            <div class="attempts-warning" id="attemptsWarning">
+                检测到异常登录行为，账户已暂时锁定，请30秒后再试
+            </div>
+            
+            <div class="timeout-warning" id="timeoutWarning">
+                页面将在 <span id="timeoutCount">300</span> 秒后自动锁定
+            </div>
+        </form>
+        
+        <div class="security-features">
+            <div class="feature"><i>✓</i> 在想超NB的文字</div>
+          
+        </div>
+        
+        
+        
+        <div class="security-info">
+            <i>✓</i> 您的登录信息已加密
+        </div>
+    </div>
+
+    <!-- 提示模态框 -->
+    <div class="hint-modal" id="hintModal">
+        <div class="hint-content">
+            <h3>验证问题提示</h3>
+            <p>请回答以下问题：<strong>群主QQ号是多少？</strong></p>
+            <p>如果您不知道答案，请联系系统管理员获取帮助。</p>
+            <button class="close-hint" id="closeHint">关闭提示</button>
+        </div>
+    </div>
+
+    <script>
+        // 主题切换功能
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        
+        // 默认设置为夜间模式
+        body.classList.add('dark-mode');
+        themeToggle.textContent = '☀️';
+        
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            body.classList.toggle('light-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                themeToggle.textContent = '☀️';
+            } else {
+                themeToggle.textContent = '🌙';
+            }
+        });
+        
+        // 提示功能
+        const hintBtn = document.getElementById('hintBtn');
+        const hintModal = document.getElementById('hintModal');
+        const closeHint = document.getElementById('closeHint');
+        
+        hintBtn.addEventListener('click', () => {
+            hintModal.style.display = 'flex';
+        });
+        
+        closeHint.addEventListener('click', () => {
+            hintModal.style.display = 'none';
+        });
+        
+        // 点击模态框外部关闭
+        hintModal.addEventListener('click', (e) => {
+            if (e.target === hintModal) {
+                hintModal.style.display = 'none';
+            }
+        });
+        
+        // 增强防破解机制
+        let loginAttempts = 0;
+        const maxAttempts = 5;
+        const lockoutTime = 30000; // 30秒锁定
+        let sessionTimeout = 300; // 5分钟会话超时
+        let timeoutInterval;
+        
+        // 密码强度检测
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('passwordStrength');
+            let strength = 0;
+            
+            if (password.length > 0) {
+                // 长度评分
+                if (password.length > 8) strength += 25;
+                if (password.length > 12) strength += 10;
+                
+                // 复杂度评分
+                if (/[a-z]/.test(password)) strength += 15;
+                if (/[A-Z]/.test(password)) strength += 15;
+                if (/[0-9]/.test(password)) strength += 15;
+                if (/[^a-zA-Z0-9]/.test(password)) strength += 20;
+            }
+            
+            // 更新强度条
+            strengthBar.style.width = strength + '%';
+            strengthBar.className = 'strength-bar';
+            
+            if (strength < 40) {
+                strengthBar.classList.add('strength-weak');
+            } else if (strength < 70) {
+                strengthBar.classList.add('strength-medium');
+            } else {
+                strengthBar.classList.add('strength-strong');
+            }
+        });
+        
+        // 会话超时功能
+        function startSessionTimeout() {
+            clearInterval(timeoutInterval);
+            sessionTimeout = 300;
+            document.getElementById('timeoutCount').textContent = sessionTimeout;
+            document.getElementById('timeoutWarning').style.display = 'block';
+            
+            timeoutInterval = setInterval(() => {
+                sessionTimeout--;
+                document.getElementById('timeoutCount').textContent = sessionTimeout;
+                
+                if (sessionTimeout <= 0) {
+                    clearInterval(timeoutInterval);
+                    document.getElementById('loginForm').reset();
+                    document.getElementById('timeoutWarning').style.display = 'none';
+                    alert('会话已超时，请重新登录');
+                }
+            }, 1000);
+        }
+        
+        // 检测用户活动
+        document.addEventListener('mousemove', startSessionTimeout);
+        document.addEventListener('keypress', startSessionTimeout);
+        
+        // 初始启动会话超时
+        startSessionTimeout();
+        
+        // 表单验证
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 检查是否超过尝试次数
+            if (loginAttempts >= maxAttempts) {
+                document.getElementById('attemptsWarning').style.display = 'block';
+                document.getElementById('loginBtn').disabled = true;
+                
+                // 30秒后解锁
+                setTimeout(() => {
+                    loginAttempts = 0;
+                    document.getElementById('attemptsWarning').style.display = 'none';
+                    document.getElementById('loginBtn').disabled = false;
+                }, lockoutTime);
+                
+                return;
+            }
+            
+            // 获取表单值
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const captcha = document.getElementById('captcha').value.trim();
+            
+            // 重置错误消息
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            let isValid = true;
+            
+            // 验证用户名
+            if (!username) {
+                document.getElementById('username-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            // 验证密码
+            if (!password) {
+                document.getElementById('password-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            // 验证验证码
+            const correctAnswer = "3836946529"; 
+            if (captcha !== correctAnswer) {
+                document.getElementById('captcha-error').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                loginAttempts++;
+                return;
+            }
+            
+            // 模拟登录验证
+            if (username === 'admin' && password === 'Admin123!') {
+                // 登录成功，跳转到index1.html
+                window.location.href = 'index1.html';
+            } else {
+                // 登录失败
+                loginAttempts++;
+                document.getElementById('captcha').value = '';
+                
+                // 如果达到最大尝试次数
+                if (loginAttempts >= maxAttempts) {
+                    document.getElementById('attemptsWarning').style.display = 'block';
+                    document.getElementById('loginBtn').disabled = true;
+                    
+                    // 30秒后解锁
+                    setTimeout(() => {
+                        loginAttempts = 0;
+                        document.getElementById('attemptsWarning').style.display = 'none';
+                        document.getElementById('loginBtn').disabled = false;
+                    }, lockoutTime);
+                }
+            }
+        });
+        
+        // 输入时隐藏错误消息
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                const errorId = this.id + '-error';
+                document.getElementById(errorId).style.display = 'none';
+            });
+        });
+        
+        // 防止右键菜单和F12
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            // 禁用F12
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
+            }
+            
+            // 禁用Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) {
+                e.preventDefault();
+                return false;
+            }
+            
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>
